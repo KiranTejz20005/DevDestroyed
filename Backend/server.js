@@ -9,13 +9,16 @@ import roastRouter from './routes/roast.js';
 const app = new Hono();
 
 app.use('*', cors({
-  origin: [
-    'http://localhost:3000', 
-    'http://localhost:3002',
-    'https://dev-destroyed.vercel.app',
-    'https://devdestroyed.vercel.app',
-    'https://devdestroyed-1.onrender.com'
-  ],
+  origin: (origin) => {
+    // Dynamically allow the origin if it's localhost or vercel/render
+    if (!origin) return '*';
+    if (origin.includes('localhost') || origin.includes('vercel.app') || origin.includes('onrender.com')) {
+      return origin;
+    }
+    return 'https://dev-destroyed.vercel.app'; // Default fallback
+  },
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
 }));
 
