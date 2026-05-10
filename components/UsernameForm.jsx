@@ -43,27 +43,21 @@ export default function UsernameForm({ onSubmitComplete }) {
     e.preventDefault();
     if (username.trim() && !isLoading) {
       setIsLoading(true);
-      
-      const loadingTimeout = setTimeout(() => {
-        onSubmitComplete?.();
-      }, 2500);
+      onSubmitComplete?.();
       
       try {
         const apiResponse = await sendToAPI(username.trim());
 
         if (apiResponse.success) {
-          setTimeout(() => {
-            if (apiResponse.redirect) {
-              window.location.href = `/roast?user=${encodeURIComponent(apiResponse.username)}`;
-            } else {
-              window.location.href = `/roast?user=${encodeURIComponent(username.trim())}`;
-            }
-          }, 100);
+          const finalUsername = apiResponse.username || username.trim();
+          window.dispatchEvent(new CustomEvent('roastComplete', { 
+            detail: { username: finalUsername } 
+          }));
 
+          // We don't reset homepage here because we want the LoadingOverlay to stay visible
           setTimeout(() => {
             setUsername('');
             setIsLoading(false);
-            window.dispatchEvent(new CustomEvent('resetHomepage'));
           }, 1000);
         } else {
           clearTimeout(loadingTimeout);

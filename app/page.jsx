@@ -44,6 +44,7 @@ function PageContent() {
   const [isSliding, setIsSliding] = useState(false);
   const [showLoadingPage, setShowLoadingPage] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState(false);
+  const [targetUser, setTargetUser] = useState("");
   const [hasApiError, setHasApiError] = useState(false);
   const [carouselRoasts, setCarouselRoasts] = useState(SAMPLE_ROASTS);
 
@@ -110,7 +111,10 @@ function PageContent() {
   }, []);
 
   useEffect(() => {
-    const handleRoastComplete = () => {
+    const handleRoastComplete = (e) => {
+      if (e.detail?.username) {
+        setTargetUser(e.detail.username);
+      }
       setShouldRedirect(true);
     };
 
@@ -126,7 +130,12 @@ function PageContent() {
       setShowLoadingPage(false);
       setShouldRedirect(false);
       setHasApiError(false);
+      setTargetUser("");
     };
+
+    window.addEventListener('roastComplete', handleRoastComplete);
+    window.addEventListener('roastError', handleRoastError);
+    window.addEventListener('resetHomepage', handleResetHomepage);
 
     const urlParams = new URLSearchParams(window.location.search);
     const regenerateUsername = urlParams.get('regenerate');
@@ -155,15 +164,11 @@ function PageContent() {
           const apiResponse = await response.json();
           
           if (apiResponse.success) {
-            setTimeout(() => {
-              if (apiResponse.redirect) {
-                window.location.href = `/roast?user=${encodeURIComponent(apiResponse.username)}`;
-              } else {
-                window.location.href = `/roast?user=${encodeURIComponent(regenerateUsername)}`;
-              }
-            }, 100);
+            const finalUsername = apiResponse.username || regenerateUsername;
+            setTargetUser(finalUsername);
+            setShouldRedirect(true);
           } else {
-            throw new Error(apiResponse.message || 'Failed to regenerate roast');
+            handleRoastError();
           }
         } catch (error) {
           console.error('Error during regenerate:', error);
@@ -171,10 +176,6 @@ function PageContent() {
         }
       }, 1000);
     }
-
-    window.addEventListener('roastComplete', handleRoastComplete);
-    window.addEventListener('roastError', handleRoastError);
-    window.addEventListener('resetHomepage', handleResetHomepage);
 
     return () => {
       window.removeEventListener('roastComplete', handleRoastComplete);
@@ -445,8 +446,9 @@ function PageContent() {
 
       <LoadingOverlay 
         show={showLoadingPage} 
-        hasApiError={hasApiError} 
         shouldRedirect={shouldRedirect}
+        username={targetUser}
+        hasApiError={hasApiError}
       />
     </div>
   );

@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from "react";
 import Background from "@/components/Background";
 
-export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRedirect }) {
+export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRedirect, username }) {
   const [loadingStep, setLoadingStep] = useState(0);
   const [trainingCount, setTrainingCount] = useState(0);
   const [finalizationProgress, setFinalizationProgress] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isTrainingComplete, setIsTrainingComplete] = useState(false);
   const [isStuck, setIsStuck] = useState(false);
+
+  const shouldRedirectRef = React.useRef(shouldRedirect);
+  
+  useEffect(() => {
+    shouldRedirectRef.current = shouldRedirect;
+    if (shouldRedirect) {
+      console.log("LoadingOverlay: shouldRedirect is now TRUE for user:", username);
+    }
+  }, [shouldRedirect, username]);
 
   useEffect(() => {
     if (show) {
@@ -64,15 +73,11 @@ export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRe
     let isFinishing = false;
     let finishStartTime = 0;
     
-    const isResponseReceived = () => {
-      return localStorage.getItem('roastData') !== null || shouldRedirect;
-    };
-    
     const updateProgress = () => {
-
-      const responseReceived = isResponseReceived();
+      const responseReceived = shouldRedirectRef.current;
 
       if (responseReceived && !isFinishing) {
+        console.log("LoadingOverlay: Response received, finishing animation...");
         isFinishing = true;
         finishStartTime = Date.now();
         setIsStuck(false);
@@ -94,9 +99,6 @@ export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRe
 
         if (progress >= 0.9) {
           progress = 0.9;
-          if (!isStuck) {
-
-          }
         }
       }
 
@@ -106,7 +108,7 @@ export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRe
       if (progress < 1) {
          requestAnimationFrame(updateProgress);
       } else {
-          // Complete
+          console.log("LoadingOverlay: Animation complete!");
           if (onComplete) onComplete();
       }
     };
@@ -115,23 +117,12 @@ export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRe
   };
 
   useEffect(() => {
-    if (shouldRedirect && finalizationProgress >= 100) {
-       // Parent handles redirect usually, or we do it here.
-       // The original code had:
-       /*
-       useEffect(() => {
-            if (shouldRedirect && finalizationProgress >= 100) {
-            setTimeout(() => {
-                window.location.href = '/roast';
-            }, 1000);
-            }
-        }, [shouldRedirect, finalizationProgress]);
-       */
+    if (shouldRedirect && finalizationProgress >= 100 && username) {
        setTimeout(() => {
-         window.location.href = '/roast';
+         window.location.href = `/roast?user=${encodeURIComponent(username)}`;
        }, 1000);
     }
-  }, [shouldRedirect, finalizationProgress]);
+  }, [shouldRedirect, finalizationProgress, username]);
 
 
   return (
