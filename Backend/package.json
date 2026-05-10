@@ -1,0 +1,22 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@hono/node-server": "^1.15.0",
+    "@supabase/supabase-js": "^2.105.4",
+    "dotenv": "^17.0.1",
+    "hono": "^4.8.4",
+    "hono-rate-limiter": "^0.4.2",
+    "nodemon": "^3.1.10",
+    "socket.io": "^4.8.1"
+  }
+}
