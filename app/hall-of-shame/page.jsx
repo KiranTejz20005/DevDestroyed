@@ -36,9 +36,9 @@ export default function HallOfShame() {
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-24 sm:py-32 relative z-10 flex flex-col items-center">
         <button
           onClick={() => router.push('/')}
-          className="self-start mb-8 flex items-center text-gray-500 hover:text-gray-900 transition-colors font-mono text-sm uppercase tracking-wider"
+          className="absolute top-8 left-8 flex items-center text-gray-400 hover:text-gray-900 transition-colors font-mono text-xs uppercase tracking-widest bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-100 shadow-sm"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft className="w-3 h-3 mr-2" />
           Back to Safety
         </button>
 
