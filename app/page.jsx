@@ -225,7 +225,7 @@ function PageContent() {
               }}
             >
               <img src="https://bags.fm/assets/images/bags-icon.png" className="w-4 h-4" alt="" />
-              $WITTY
+              $DEVDESTROYED
             </a> */}
           </div>
         </div>

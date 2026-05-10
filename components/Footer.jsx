@@ -45,14 +45,9 @@ export default function Footer() {
             <span className="text-base">{emojis[emojiIndex]}</span>
             <span className="text-xs tracking-wider font-medium">
               2026 | A PROJECT BY{' '}
-              <a 
-                href="https://x.com/buildwithsid" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-blue-300 duration-200 cursor-pointer underline underline-offset-3"
-              >
+              <span className="transition-colors hover:text-blue-300 duration-200">
                 KIRAN TEJA
-              </a>
+              </span>
             </span>
           </div>
         </div>
@@ -72,14 +67,9 @@ export default function Footer() {
           <span className="text-base">{emojis[emojiIndex]}</span>
           <span className="text-xs text-black/80 font-mono tracking-wider font-semibold">
             2026 | A PROJECT BY{' '}
-            <a 
-              href="https://siddz.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-500 transition-colors duration-200 cursor-pointer underline decoration-dotted underline-offset-2"
-            >
+            <span className="text-blue-600">
               KIRAN TEJA
-            </a>
+            </span>
           </span>
         </div>
         <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg">
