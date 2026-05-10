@@ -50,7 +50,7 @@ function PageContent() {
   useEffect(() => {
     const fetchRealRoasts = async () => {
       try {
-        const res = await fetch('http://localhost:3001/api/roast/history/recent');
+        const res = await fetch(`${config.url}/api/roast/history/recent`);
         const json = await res.json();
         if (json.success && json.data && json.data.length > 0) {
           const reactions = [

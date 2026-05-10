@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import Background from '@/components/Background';
 import { ArrowLeft, Flame } from 'lucide-react';
 import Image from 'next/image';
+import config from '../../config.json';
 
 export default function HallOfShame() {
   const [roasts, setRoasts] = useState([]);
@@ -14,7 +15,7 @@ export default function HallOfShame() {
   useEffect(() => {
     const fetchRoasts = async () => {
       try {
-        const res = await fetch('http://localhost:3001/api/roast/history/recent');
+        const res = await fetch(`${config.url}/api/roast/history/recent`);
         const json = await res.json();
         if (json.success) {
           setRoasts(json.data);
