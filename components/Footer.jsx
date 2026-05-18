@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 
 export default function Footer() {
   const [currentTime, setCurrentTime] = useState('');
   const [emojiIndex, setEmojiIndex] = useState(0);
+  const shouldReduceMotion = useReducedMotion();
   
   const emojis = ['🦄', '🚀', '💀', '🔥', '⚡', '🎯', '💻', '🌟', '⭐', '✨', '🎪', '🎭', '🎨', '🎲'];
 
@@ -38,9 +40,15 @@ export default function Footer() {
   }, []);
 
   return (
-    <div className="relative w-full px-4 pb-8 mt-auto">
+    <motion.div
+      className="relative w-full px-4 pb-8 mt-auto"
+      initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-10%" }}
+      transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
       <div className="hidden sm:flex justify-between items-center">
-        <div className="bg-[#202020] text-white text-sm font-mono px-4 py-2 rounded-lg">
+        <motion.div className="bg-[#202020] text-white text-sm font-mono px-4 py-2 rounded-lg" whileHover={shouldReduceMotion ? undefined : { y: -2, scale: 1.01 }} transition={{ duration: 0.2 }}>
           <div className="flex items-center space-x-2">
             <span className="text-base">{emojis[emojiIndex]}</span>
             <span className="text-xs tracking-wider font-medium">
@@ -50,20 +58,26 @@ export default function Footer() {
               </span>
             </span>
           </div>
-        </div>
+        </motion.div>
         
-        <div className="bg-[#202020] text-white text-sm font-mono px-4 py-2 rounded-lg shadow-lg">
+        <motion.div className="bg-[#202020] text-white text-sm font-mono px-4 py-2 rounded-lg shadow-lg" whileHover={shouldReduceMotion ? undefined : { y: -2, scale: 1.01 }} transition={{ duration: 0.2 }}>
           <div className="flex items-center space-x-2">
             ⏲️
-            <span className="text-xs ml-2 tracking-wider font-medium">
+            <motion.span
+              key={currentTime}
+              initial={{ opacity: 0.6, y: -2 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.25 }}
+              className="text-xs ml-2 tracking-wider font-medium"
+            >
               {currentTime}
-            </span>
+            </motion.span>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       <div className="sm:hidden flex flex-col items-center space-y-3 text-center pt-4">
-        <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg">
+        <motion.div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg" whileHover={shouldReduceMotion ? undefined : { y: -2, scale: 1.01 }} transition={{ duration: 0.2 }}>
           <span className="text-base">{emojis[emojiIndex]}</span>
           <span className="text-xs text-black/80 font-mono tracking-wider font-semibold">
             2026 | A PROJECT BY{' '}
@@ -71,14 +85,20 @@ export default function Footer() {
               KIRAN TEJA
             </span>
           </span>
-        </div>
-        <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg">
+        </motion.div>
+        <motion.div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg" whileHover={shouldReduceMotion ? undefined : { y: -2, scale: 1.01 }} transition={{ duration: 0.2 }}>
           ⏲️
-          <span className="text-xs text-black/80 ml-2 font-mono tracking-wider font-semibold">
+          <motion.span
+            key={currentTime}
+            initial={{ opacity: 0.6, y: -2 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.25 }}
+            className="text-xs text-black/80 ml-2 font-mono tracking-wider font-semibold"
+          >
             {currentTime}
-          </span>
-        </div>
+          </motion.span>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import UsernameForm from "@/components/UsernameForm";
 import Footer from "@/components/Footer";
 import Background from "@/components/Background";
@@ -47,11 +48,51 @@ function PageContent() {
   const [targetUser, setTargetUser] = useState("");
   const [hasApiError, setHasApiError] = useState(false);
   const [carouselRoasts, setCarouselRoasts] = useState(SAMPLE_ROASTS);
+  const shouldReduceMotion = useReducedMotion();
+
+  const staggerContainer = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: shouldReduceMotion ? 0 : 0.1,
+        delayChildren: shouldReduceMotion ? 0 : 0.05,
+      },
+    },
+  };
+
+  const fadeUp = {
+    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 24 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: shouldReduceMotion ? 0 : 0.6,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  };
+
+  const cardFade = {
+    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 18, scale: shouldReduceMotion ? 1 : 0.98 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: shouldReduceMotion ? 0 : 0.45,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  };
 
   useEffect(() => {
     const fetchRealRoasts = async () => {
       try {
         const res = await fetch(`${config.url}/api/roast/history/recent`);
+        if (!res.ok) {
+          return;
+        }
+
         const json = await res.json();
         if (json.success && json.data && json.data.length > 0) {
           const reactions = [
@@ -67,7 +108,7 @@ function PageContent() {
 
           const roastLevels = [
             "Senior Copy-Paster",
-            "10x Bug Creator",
+        // Keep the sample carousel when the backend is unavailable.
             "StackOverflow Addict",
             "Localhost Legend",
             "Merge Conflict King",
@@ -231,37 +272,47 @@ function PageContent() {
         </div>
       )}
 
-      <div
+      <motion.div
         className={`relative min-h-screen flex flex-col transition-transform duration-500 ease-in-out ${
           isSliding ? "-translate-x-full" : "translate-x-0"
         }`}
+        initial={false}
+        animate={{ x: isSliding ? "-100%" : "0%" }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.22, 1, 0.36, 1] }}
       >
         <Background />
-        <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 relative z-10">
+        <motion.div
+          className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 relative z-10"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
           
           <div className="max-w-5xl mb-16 mt-24 sm:mt-20 w-full text-center">
-            <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-white border border-gray-200 shadow-sm mb-7">
+            <motion.div variants={fadeUp} className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-white border border-gray-200 shadow-sm mb-7">
               <span className="w-2 h-2 rounded-full bg-green-400 mr-2"></span>
               <span className="text-xs font-bold text-gray-600 uppercase tracking-widest font-space">Introducing DevDestroyed v1.0</span>
-            </div>
+            </motion.div>
             
-            <h1 className="font-space text-4xl sm:text-7xl md:text-7xl max-w-[45rem] mx-auto font-bold tracking-tighter text-gray-900 mb-8 leading-[0.9]">
+            <motion.h1 variants={fadeUp} className="font-space text-4xl sm:text-7xl md:text-7xl max-w-[45rem] mx-auto font-bold tracking-tighter text-gray-900 mb-8 leading-[0.9]">
               Turning GitHub Profiles Into Comedy Material.
-            </h1>
+            </motion.h1>
 
-            <p className="font-space text-lg sm:text-xl text-gray-500 mb-9 max-w-2xl mx-auto leading-relaxed">
+            <motion.p variants={fadeUp} className="font-space text-lg sm:text-xl text-gray-500 mb-9 max-w-2xl mx-auto leading-relaxed">
               Enter your username and witness the art of digital destruction. Our sophisticated A.I roasts you by your repositories and commit history.
-            </p>
+            </motion.p>
 
-            <UsernameForm onSubmitComplete={handleFormSubmit} />
+            <motion.div variants={fadeUp}>
+              <UsernameForm onSubmitComplete={handleFormSubmit} />
+            </motion.div>
 
-            <div className="mt-8 mb-4">
+            <motion.div variants={fadeUp} className="mt-8 mb-4">
               <a href="/hall-of-shame" className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl border-2 border-orange-200 bg-orange-50 text-orange-600 hover:bg-orange-100 hover:border-orange-300 font-bold font-mono transition-all duration-200 hover:-translate-y-1 shadow-sm">
                 🔥 View Hall of Shame
               </a>
-            </div>
+            </motion.div>
 
-            <div className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-8 text-left max-w-6xl mx-auto sm:px-4 px-1">
+            <motion.div variants={staggerContainer} className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-8 text-left max-w-6xl mx-auto sm:px-4 px-1" initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-15%" }}>
               {[
                 {
                   icon: (
@@ -291,15 +342,15 @@ function PageContent() {
                   bg: "bg-purple-50"
                 }
               ].map((feature, idx) => (
-                <div key={idx} className="group p-8 rounded-3xl bg-white border border-gray-100 shadow-sm shadow-gray-200/50 hover:shadow-xl hover:shadow-gray-200/40 transition-all duration-300 hover:-translate-y-1">
+                <motion.div key={idx} variants={cardFade} className="group p-8 rounded-3xl bg-white border border-gray-100 shadow-sm shadow-gray-200/50 hover:shadow-xl hover:shadow-gray-200/40 transition-all duration-300 hover:-translate-y-1" whileHover={shouldReduceMotion ? undefined : { y: -6, scale: 1.01 }}>
                   <div className={`w-14 h-14 rounded-2xl ${feature.bg} flex items-center justify-center mb-6 ${feature.color} group-hover:scale-110 group-hover:rotate-12 transition-transform duration-300`}>
                     {feature.icon}
                   </div>
                   <h3 className="font-bold text-xl text-gray-900 mb-2 font-outfit">{feature.title}</h3>
                   <p className="text-base text-gray-500 font-space leading-relaxed">{feature.desc}</p>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
 
             {/* <div className="mt-32 border-t border-gray-100 pt-16">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -322,15 +373,15 @@ function PageContent() {
             </p>
 
             {/* What You'll Get Section */}
-            <div className="mt-20 sm:mt-32 max-w-4xl mx-auto">
-              <h2 className="font-space text-3xl sm:text-4xl font-bold text-gray-900 mb-1 tracking-tight">
+            <motion.div className="mt-20 sm:mt-32 max-w-4xl mx-auto" variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-15%" }}>
+              <motion.h2 variants={fadeUp} className="font-space text-3xl sm:text-4xl font-bold text-gray-900 mb-1 tracking-tight">
                 What Awaits You
-              </h2>
-              <p className="font-outfit text-lg text-gray-500 mb-12">
+              </motion.h2>
+              <motion.p variants={fadeUp} className="font-outfit text-lg text-gray-500 mb-12">
                 Brace yourself for a multi-dimensional personality autopsy
-              </p>
+              </motion.p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-6" variants={staggerContainer}>
                 {[
                   {
                     emoji: "🔥",
@@ -357,30 +408,30 @@ function PageContent() {
                     gradient: "from-pink-50 to-rose-50"
                   }
                 ].map((item, idx) => (
-                  <div key={idx} className={`relative p-6 rounded-2xl bg-gradient-to-br ${item.gradient} border border-gray-100 hover:scale-[1.02] transition-transform ease-out duration-300 cursor-default`}>
+                  <motion.div key={idx} variants={cardFade} className={`relative p-6 rounded-2xl bg-gradient-to-br ${item.gradient} border border-gray-100 hover:scale-[1.02] transition-transform ease-out duration-300 cursor-default`} whileHover={shouldReduceMotion ? undefined : { y: -4 }}>
                     <div className="text-4xl mb-3">{item.emoji}</div>
                     <h3 className="font-space text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
                     <p className="font-outfit max-w-[19rem] mx-auto text-sm text-gray-600">{item.desc}</p>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
             {/* How It Works Section */}
-            <div className="mt-32 max-w-5xl mx-auto px-4">
-               <div className="text-center mb-16">
-                  <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-red-50 border border-red-100 shadow-sm mb-6">
+            <motion.div className="mt-32 max-w-5xl mx-auto px-4" variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-10%" }}>
+              <div className="text-center mb-16">
+                <motion.div variants={fadeUp} className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-red-50 border border-red-100 shadow-sm mb-6">
                      <span className="text-xs font-bold text-red-600 uppercase tracking-widest font-space">The Disassembly Line</span>
-                  </div>
-                  <h2 className="font-space text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-4">
+                </motion.div>
+                <motion.h2 variants={fadeUp} className="font-space text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-4">
                     From Data to Destruction
-                  </h2>
-                  <p className="font-outfit text-lg text-gray-500 max-w-2xl mx-auto">
+                </motion.h2>
+                <motion.p variants={fadeUp} className="font-outfit text-lg text-gray-500 max-w-2xl mx-auto">
                     A three-step process designed to dismantle your self-esteem efficiently.
-                  </p>
+                </motion.p>
                </div>
                
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6" variants={staggerContainer}>
                   
                   {[
                     { 
@@ -408,7 +459,7 @@ function PageContent() {
                       bg: "bg-orange-50 border-orange-100"
                     }
                   ].map((item, i) => (
-                    <div key={i} className={`relative flex flex-col items-start text-left group bg-white border border-gray-100 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden`}>
+                    <motion.div key={i} variants={cardFade} className={`relative flex flex-col items-start text-left group bg-white border border-gray-100 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden`} whileHover={shouldReduceMotion ? undefined : { y: -6, scale: 1.01 }}>
                       <div className={`absolute top-0 right-0 p-8 opacity-10 font-space font-bold text-6xl text-gray-900 select-none group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500`}>
                         {item.step}
                       </div>
@@ -419,30 +470,34 @@ function PageContent() {
 
                       <h3 className="font-space font-bold text-xl text-gray-900 mb-3 relative z-10">{item.title}</h3>
                       <p className="text-gray-500 font-outfit text-base leading-relaxed relative z-10">{item.desc}</p>
-                    </div>
+                      </motion.div>
                   ))}
-               </div>
-            </div>
+                  </motion.div>
+                </motion.div>
 
             {/* Sample Roast Section - Vercel Style */}
-            <div className="mt-32 max-w-4xl mx-auto px-4">
+            <motion.div className="mt-32 max-w-4xl mx-auto px-4" variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-10%" }}>
               <div className="text-center mb-12">
-                   <h2 className="font-space text-3xl font-bold text-gray-900 mb-2">The Hall of Shame</h2>
-                   <p className="font-outfit text-gray-500">Witness the casualties of truth. You're next.</p>
+                   <motion.h2 variants={fadeUp} className="font-space text-3xl font-bold text-gray-900 mb-2">The Hall of Shame</motion.h2>
+                   <motion.p variants={fadeUp} className="font-outfit text-gray-500">Witness the casualties of truth. You're next.</motion.p>
               </div>
 
-              <RoastCarousel roasts={carouselRoasts} />
-            </div>
+              <motion.div variants={cardFade}>
+                <RoastCarousel roasts={carouselRoasts} />
+              </motion.div>
+            </motion.div>
 
             {/* FAQ Section - Onavix Inspired Clean Card */}
-            <FAQ />
+            <motion.div variants={cardFade}>
+              <FAQ />
+            </motion.div>
 
 
           </div>
-        </div>
+        </motion.div>
 
         <Footer />
-      </div>
+      </motion.div>
 
       <LoadingOverlay 
         show={showLoadingPage} 

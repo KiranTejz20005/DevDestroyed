@@ -1,6 +1,7 @@
 "use client";
 
 import confetti from "canvas-confetti";
+import { motion, useReducedMotion } from "framer-motion";
 
 const shootConfetti = (origin) => {
   const count = 200;
@@ -67,6 +68,8 @@ export function ConfettiButton({
   onClick,
   ...props
 }) {
+  const shouldReduceMotion = useReducedMotion();
+
   const handleClick = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (rect.left + rect.width / 2) / window.innerWidth;
@@ -79,8 +82,15 @@ export function ConfettiButton({
   };
 
   return (
-    <button onClick={handleClick} className={className} {...props}>
+    <motion.button
+      onClick={handleClick}
+      className={className}
+      whileHover={shouldReduceMotion ? undefined : { y: -2, scale: 1.01 }}
+      whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
+      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+      {...props}
+    >
       {children}
-    </button>
+    </motion.button>
   );
 }

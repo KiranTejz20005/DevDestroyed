@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import Background from "@/components/Background";
 
 export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRedirect, username }) {
@@ -8,6 +9,7 @@ export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRe
   const [isInitialized, setIsInitialized] = useState(false);
   const [isTrainingComplete, setIsTrainingComplete] = useState(false);
   const [isStuck, setIsStuck] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
   const shouldRedirectRef = React.useRef(shouldRedirect);
   
@@ -126,21 +128,32 @@ export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRe
 
 
   return (
-      <div
-        className={`fixed inset-0 bg-gradient-to-br from-white to-gray-50 flex items-center justify-center transition-transform duration-700 ease-in-out ${
-          show ? "translate-x-0" : "translate-x-full"
-        } overflow-hidden z-[100]`}
+      <motion.div
+        className="fixed inset-0 bg-gradient-to-br from-white to-gray-50 flex items-center justify-center overflow-hidden z-[100]"
+        initial={false}
+        animate={{ x: show ? 0 : "100%" }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
         <Background reduced={true} />
-        <div className="text-center max-w-3xl unselectable w-full px-4 sm:px-8">
-          <div className="mb-12">
-            <h2 className="font-space text-3xl sm:text-4xl font-bold text-gray-900 mb-3 tracking-tight uppercase">
+        <motion.div
+          className="text-center max-w-3xl unselectable w-full px-4 sm:px-8"
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: shouldReduceMotion ? 0 : 0.45, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <motion.div className="mb-12" initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: shouldReduceMotion ? 0 : 0.35 }}>
+            <motion.h2 className="font-space text-3xl sm:text-4xl font-bold text-gray-900 mb-3 tracking-tight uppercase" animate={show && !shouldReduceMotion ? { letterSpacing: "0.02em" } : undefined}>
               System Processing
-            </h2>
+            </motion.h2>
             <p className="text-gray-500 font-mono text-xs uppercase tracking-widest">Initiating behavioral analysis protocols...</p>
-          </div>
+          </motion.div>
 
-          <div className="bg-white/90 backdrop-blur-xl border border-gray-300 rounded-xl p-8 shadow-2xl shadow-black/5 max-w-2xl mx-auto relative overflow-hidden">
+          <motion.div
+            className="bg-white/90 backdrop-blur-xl border border-gray-300 rounded-xl p-8 shadow-2xl shadow-black/5 max-w-2xl mx-auto relative overflow-hidden"
+            initial={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.985 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.45, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+          >
             <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.02)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] z-0 pointer-events-none bg-[length:100%_4px,6px_100%]"></div>
             
             <div className="space-y-8 font-mono text-sm relative z-10">
@@ -148,11 +161,11 @@ export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRe
               <div className="text-left group">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-3">
-                    <div className={`w-2 h-2 rounded-full transition-all duration-500 ${
+                    <motion.div className={`w-2 h-2 rounded-full transition-all duration-500 ${
                       loadingStep >= 0 && isInitialized 
                         ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" 
                         : "bg-gray-300"
-                    }`}></div>
+                    }`} animate={isInitialized && !shouldReduceMotion ? { scale: [1, 1.1, 1] } : undefined} transition={{ duration: 1.4, repeat: isInitialized && !shouldReduceMotion ? Infinity : 0, ease: 'easeInOut' }} />
                     <span className={`font-bold tracking-tight ${loadingStep >= 0 ? "text-gray-900" : "text-gray-400"}`}>
                        DATA_EXTRACTION
                     </span>
@@ -178,11 +191,11 @@ export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRe
               }`}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-3">
-                    <div className={`w-2 h-2 rounded-full transition-all duration-500 ${
+                    <motion.div className={`w-2 h-2 rounded-full transition-all duration-500 ${
                       isTrainingComplete 
                         ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" 
                         : "bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.6)]"
-                    }`}></div>
+                    }`} animate={isTrainingComplete && !shouldReduceMotion ? { scale: [1, 1.1, 1] } : undefined} transition={{ duration: 1.4, repeat: isTrainingComplete && !shouldReduceMotion ? Infinity : 0, ease: 'easeInOut' }} />
                     <span className={`font-bold tracking-tight ${loadingStep >= 1 ? "text-gray-900" : "text-gray-400"}`}>
                        PATTERN_RECOGNITION
                     </span>
@@ -216,11 +229,11 @@ export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRe
               }`}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-3">
-                    <div className={`w-2 h-2 rounded-full transition-all duration-500 ${
+                    <motion.div className={`w-2 h-2 rounded-full transition-all duration-500 ${
                       finalizationProgress >= 100 
                         ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" 
                         : "bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.6)]"
-                    }`}></div>
+                    }`} animate={finalizationProgress >= 100 && !shouldReduceMotion ? { scale: [1, 1.1, 1] } : undefined} transition={{ duration: 1.4, repeat: finalizationProgress >= 100 && !shouldReduceMotion ? Infinity : 0, ease: 'easeInOut' }} />
                     <span className={`font-bold tracking-tight ${loadingStep >= 2 ? "text-gray-900" : "text-gray-400"}`}>
                        ROAST_GENERATION
                     </span>
@@ -236,33 +249,33 @@ export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRe
 
                 <div className="pl-5 mt-3">
                   <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                     <div 
+                     <motion.div 
                         className="h-full bg-blue-600 transition-all duration-200 ease-out relative"
                         style={{ width: `${finalizationProgress}%` }}
                       >
                         <div className="absolute inset-0 bg-white/30 w-full h-full animate-[shimmer_1s_infinite]"></div>
-                      </div>
+                      </motion.div>
                   </div>
                 </div>
               </div>
 
               {!isInitialized && (
-                <div className="mt-8 flex justify-center">
+                <motion.div className="mt-8 flex justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: shouldReduceMotion ? 0 : 0.25 }}>
                   <div className="relative">
                     <div className="animate-spin rounded-full h-10 w-10 border-2 border-gray-200 border-t-black"></div>
                     <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-black animate-ping opacity-20"></div>
                   </div>
-                </div>
+                </motion.div>
               )}
 
             </div>
-          </div>
+          </motion.div>
 
           <div className="mt-8 text-xs text-gray-400 font-mono tracking-wide uppercase">
             System resources allocated...
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
   );
 }
 

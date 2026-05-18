@@ -1,7 +1,18 @@
 import React, { useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 export default function FAQ() {
     const [openFaqIndex, setOpenFaqIndex] = useState(null);
+    const shouldReduceMotion = useReducedMotion();
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 18 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: shouldReduceMotion ? 0 : 0.45, ease: [0.22, 1, 0.36, 1] },
+        },
+    };
 
     const faqItems = [
         { 
@@ -54,13 +65,17 @@ export default function FAQ() {
             
             <div className="space-y-4">
                 {faqItems.map((item, i) => (
-                    <div 
+                    <motion.div 
                         key={i} 
                         className={`group border rounded-3xl transition-all duration-300 ${
                             openFaqIndex === i 
                             ? 'bg-white border-gray-900 shadow-xl ring-1 ring-gray-900' 
                             : 'bg-white border-gray-100 hover:border-gray-300 shadow-sm'
                         }`}
+                        variants={itemVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, margin: "-10%" }}
                     >
                         <button
                             onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)}
@@ -69,33 +84,42 @@ export default function FAQ() {
                             <span className={`font-space font-bold transition-colors duration-300 ${openFaqIndex === i ? 'text-gray-900' : 'text-gray-600'} text-xl`}>
                                 {item.q}
                             </span>
-                            <span className={`flex-shrink-0 ml-4 flex items-center justify-center w-10 h-10 rounded-full border transition-all duration-500 ${
+                            <motion.span
+                                className={`flex-shrink-0 ml-4 flex items-center justify-center w-10 h-10 rounded-full border transition-all duration-500 ${
                                 openFaqIndex === i 
                                 ? 'bg-gray-900 border-gray-900 text-white rotate-[135deg]' 
                                 : 'bg-gray-50 border-gray-100 text-gray-400 group-hover:border-gray-300 group-hover:text-gray-600'
-                            }`}>
+                            }`}
+                                animate={{ rotate: openFaqIndex === i ? 135 : 0, scale: openFaqIndex === i ? 1.04 : 1 }}
+                                transition={{ duration: shouldReduceMotion ? 0 : 0.35, ease: [0.22, 1, 0.36, 1] }}
+                            >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 5V19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                                     <path d="M5 12H19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
-                            </span>
+                            </motion.span>
                         </button>
                         
-                        <div 
-                            className={`grid transition-all duration-500 ease-in-out ${
-                                openFaqIndex === i ? 'grid-rows-[1fr] opacity-100 mb-4' : 'grid-rows-[0fr] opacity-0'
-                            }`}
-                        >
-                            <div className="overflow-hidden">
-                                <div className="px-8 pb-8 pt-0">
-                                    <div className="h-px bg-gray-100 mb-6"></div>
-                                    <p className="text-gray-500 font-outfit leading-relaxed text-lg max-w-3xl">
-                                        {item.a}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        <AnimatePresence initial={false} mode="wait">
+                            {openFaqIndex === i && (
+                                <motion.div
+                                    key="content"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: shouldReduceMotion ? 0 : 0.35, ease: [0.22, 1, 0.36, 1] }}
+                                    className="overflow-hidden"
+                                >
+                                    <div className="px-8 pb-8 pt-0">
+                                        <div className="h-px bg-gray-100 mb-6"></div>
+                                        <p className="text-gray-500 font-outfit leading-relaxed text-lg max-w-3xl">
+                                            {item.a}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </motion.div>
                 ))}
             </div>
         </div>
