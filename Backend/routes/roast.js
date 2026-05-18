@@ -7,7 +7,7 @@ router.get('/history/recent', async (c) => {
   try {
     const { data: roasts, error } = await supabase
       .from('roasts')
-      .select('username, avatar, updated_at, roast')
+      .select('username, avatar, updated_at, roast, strength, weakness, love_life, life_purpose')
       .not('roast', 'is', null)
       .order('updated_at', { ascending: false })
       .limit(50)

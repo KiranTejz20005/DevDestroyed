@@ -4,29 +4,26 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function RoastCarousel({ roasts }) {
   const [activeRoastIndex, setActiveRoastIndex] = useState(0);
-  const [shuffledRoasts, setShuffledRoasts] = useState([]);
   const [slideDirection, setSlideDirection] = useState('right');
   const [isTransitioning, setIsTransitioning] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
-    if (roasts && roasts.length > 0) {
-        setShuffledRoasts([...roasts].sort(() => Math.random() - 0.5));
-    }
+    setActiveRoastIndex(0);
   }, [roasts]);
 
 
   
 
   useEffect(() => {
-      if (shuffledRoasts.length === 0 || isTransitioning) return;
+      if (!roasts || roasts.length === 0 || isTransitioning) return;
       
       const timer = setTimeout(() => {
           changeSlide('next');
       }, 9700);
       
       return () => clearTimeout(timer);
-  }, [shuffledRoasts.length, activeRoastIndex, isTransitioning]);
+    }, [roasts, activeRoastIndex, isTransitioning]);
 
   const changeSlide = (direction) => {
     if (isTransitioning) return;
@@ -36,9 +33,9 @@ export default function RoastCarousel({ roasts }) {
 
     setTimeout(() => {
       if (direction === 'next') {
-        setActiveRoastIndex(curr => (curr + 1) % shuffledRoasts.length);
+        setActiveRoastIndex(curr => (curr + 1) % roasts.length);
       } else {
-        setActiveRoastIndex(curr => (curr - 1 + shuffledRoasts.length) % shuffledRoasts.length);
+        setActiveRoastIndex(curr => (curr - 1 + roasts.length) % roasts.length);
       }
       
       setTimeout(() => {
@@ -47,7 +44,9 @@ export default function RoastCarousel({ roasts }) {
     }, shouldReduceMotion ? 0 : 260);
   };
   
-  if (shuffledRoasts.length === 0) return null;
+  if (!roasts || roasts.length === 0) return null;
+
+  const activeRoast = roasts[activeRoastIndex];
 
   return (
     <div className="relative group min-h-[460px] sm:min-h-[420px]">
@@ -72,32 +71,32 @@ export default function RoastCarousel({ roasts }) {
                 <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-100">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-gradient-to-tr from-gray-50 to-white border border-gray-100 rounded-full flex items-center justify-center text-xl shadow-sm shrink-0 overflow-hidden">
-                        {shuffledRoasts[activeRoastIndex].avatar ? (
+                        {activeRoast.avatar ? (
                           <img 
-                            src={shuffledRoasts[activeRoastIndex].avatar} 
-                            alt={shuffledRoasts[activeRoastIndex].username} 
+                            src={activeRoast.avatar} 
+                            alt={activeRoast.username} 
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          shuffledRoasts[activeRoastIndex].emoji
+                          activeRoast.emoji
                         )}
                     </div>
                     <div className="text-left">
-                        <div className="font-space font-bold text-gray-900 text-lg">{shuffledRoasts[activeRoastIndex].username}</div>
+                        <div className="font-space font-bold text-gray-900 text-lg">{activeRoast.username}</div>
                         <div className="font-mono text-xs text-gray-400 uppercase tracking-wider flex items-center gap-2">
                         <span className="hidden mt-1 sm:inline">Roast Level:</span> 
-                        <span className="text-red-500 mt-1 font-bold bg-red-50 px-2 py-0.5 rounded-full">{shuffledRoasts[activeRoastIndex].roastLevel}</span>
+                        <span className="text-red-500 mt-1 font-bold bg-red-50 px-2 py-0.5 rounded-full">{activeRoast.roastLevel}</span>
                         </div>
                     </div>
                 </div>
                 </div>
                 
                 <p className="font-pop text-gray-600 leading-relaxed text-lg mb-8">
-                "{shuffledRoasts[activeRoastIndex].roast}"
+                "{activeRoast.roast}"
                 </p>
 
                 <div className="flex flex-wrap gap-2">
-                {shuffledRoasts[activeRoastIndex].tags.map((tag) => (
+                {activeRoast.tags.map((tag) => (
                     <span key={tag} className="px-3 py-1 bg-gray-50 border border-gray-100 rounded-full text-xs font-mono text-gray-500">
                     {tag}
                     </span>
@@ -122,12 +121,12 @@ export default function RoastCarousel({ roasts }) {
               transition={{ duration: shouldReduceMotion ? 0 : 0.35, ease: [0.22, 1, 0.36, 1] }}
               >
             <div className="flex items-center gap-3 mb-2">
-                <div className="flex-1 font-space font-bold text-gray-900 text-sm">{shuffledRoasts[activeRoastIndex].username}</div>
-                <span className="text-xs text-gray-400">just now</span>
+                    <div className="flex-1 font-space font-bold text-gray-900 text-sm">{activeRoast.username}</div>
+                    <span className="text-xs text-gray-400">{activeRoast.generatedAt || 'generated time unavailable'}</span>
             </div>
             <p className="font-outfit text-gray-700 text-sm italic">
-                <span className="text-red-500 font-bold mr-1 not-italic">{shuffledRoasts[activeRoastIndex].reactionSentiment === 'Angry' ? 'WTF??' : shuffledRoasts[activeRoastIndex].reactionSentiment === 'Sad' ? 'Ouch.' : shuffledRoasts[activeRoastIndex].reactionSentiment === 'Defensive' ? 'Excuse me?' : 'Uhm...'}</span>
-                {shuffledRoasts[activeRoastIndex].reaction}
+                    <span className="text-red-500 font-bold mr-1 not-italic">{activeRoast.reactionSentiment === 'Angry' ? 'WTF??' : activeRoast.reactionSentiment === 'Sad' ? 'Ouch.' : activeRoast.reactionSentiment === 'Defensive' ? 'Excuse me?' : 'Hmm.'}</span>
+                    {activeRoast.reaction}
             </p>
               </motion.div>
             </AnimatePresence>
@@ -161,7 +160,7 @@ export default function RoastCarousel({ roasts }) {
                 </button>
             </div>
             <div className="font-mono text-xs text-gray-400">
-            {activeRoastIndex + 1} / {shuffledRoasts.length}
+            {activeRoastIndex + 1} / {roasts.length}
             </div>
         </div>
 

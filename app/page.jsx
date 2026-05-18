@@ -41,6 +41,98 @@ const SAMPLE_ROASTS = [
   }
 ];
 
+const ROAST_SIGNAL_PATTERNS = [
+  {
+    test: /fork|forks?/i,
+    roastLevel: 'Fork Collector',
+    tags: ['#ForkCollector', '#AbandonedRepos', '#GitBlameMe'],
+    commentField: 'weakness'
+  },
+  {
+    test: /stack overflow|copy|paste|tutorial|copy-paste/i,
+    roastLevel: 'StackOverflow Addict',
+    tags: ['#TutorialHell', '#CopypasteKing', '#NoRealCode'],
+    commentField: 'weakness'
+  },
+  {
+    test: /commit|push|message|history/i,
+    roastLevel: 'Commit Chaos',
+    tags: ['#LazyCommits', '#EmptyCommits', '#GitBlameMe'],
+    commentField: 'strength'
+  },
+  {
+    test: /deploy|production|hotfix|crash/i,
+    roastLevel: 'Production Crasher',
+    tags: ['#ProductionCrasher', '#YoloDeploys', '#Hotfix'],
+    commentField: 'weakness'
+  },
+  {
+    test: /readme|docs?|documentation/i,
+    roastLevel: 'Documentation Evader',
+    tags: ['#DocumentationIsHard', '#NoDocs', '#SpaghettiCode'],
+    commentField: 'life_purpose'
+  },
+  {
+    test: /ai|chatgpt|prompt|gpt/i,
+    roastLevel: 'Prompt Engineer',
+    tags: ['#PromptEngineer', '#ChatGPTDev', '#ZeroStars'],
+    commentField: 'life_purpose'
+  },
+  {
+    test: /todo|task|list/i,
+    roastLevel: 'Todo Overlord',
+    tags: ['#TodoHell', '#FeatureFreeze', '#ShipItMaybe'],
+    commentField: 'strength'
+  }
+];
+
+function formatRoastTime(updatedAt) {
+  if (!updatedAt) {
+    return 'generated time unavailable';
+  }
+
+  const roastDate = new Date(updatedAt);
+
+  if (Number.isNaN(roastDate.getTime())) {
+    return 'generated time unavailable';
+  }
+
+  return `generated ${roastDate.toLocaleString([], {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })}`;
+}
+
+function truncateText(text, maxLength = 120) {
+  if (!text) {
+    return '';
+  }
+
+  return text.length > maxLength ? `${text.slice(0, maxLength).trim()}...` : text;
+}
+
+function getRoastSignal(roastText = '') {
+  return ROAST_SIGNAL_PATTERNS.find((signal) => signal.test.test(roastText)) || {
+    roastLevel: 'GitHub Menace',
+    tags: ['#CodeNightmare', '#RepoGoblin', '#ShipItLater'],
+    commentField: 'weakness'
+  };
+}
+
+function buildRelatedComment(roastRecord, signal) {
+  const fields = {
+    strength: roastRecord.strength,
+    weakness: roastRecord.weakness,
+    love_life: roastRecord.love_life,
+    life_purpose: roastRecord.life_purpose,
+  };
+
+  const selectedComment = fields[signal.commentField] || fields.weakness || fields.strength || fields.life_purpose || roastRecord.roast;
+  return truncateText(selectedComment, 140);
+}
+
 function PageContent() {
   const [isSliding, setIsSliding] = useState(false);
   const [showLoadingPage, setShowLoadingPage] = useState(false);
@@ -95,57 +187,24 @@ function PageContent() {
 
         const json = await res.json();
         if (json.success && json.data && json.data.length > 0) {
-          const reactions = [
-            { text: "I should have made my profile private...", sentiment: "Sad" },
-            { text: "This is painfully accurate.", sentiment: "Sad" },
-            { text: "Jokes on you, I don't even know how to code.", sentiment: "Defensive" },
-            { text: "I'm deleting my GitHub right now.", sentiment: "Sad" },
-            { text: "Who gave this AI so much attitude?!", sentiment: "Angry" },
-            { text: "At least I have a life outside of coding...", sentiment: "Defensive" },
-            { text: "I feel personally attacked.", sentiment: "Sad" },
-            { text: "My imposter syndrome just leveled up.", sentiment: "Sad" }
-          ];
-
-          const roastLevels = [
-            "Senior Copy-Paster",
-        // Keep the sample carousel when the backend is unavailable.
-            "StackOverflow Addict",
-            "Localhost Legend",
-            "Merge Conflict King",
-            "Console.log Architect",
-            "Documentation Evader",
-            "Ctrl+C Ctrl+V Master"
-          ];
-
-          const tagSets = [
-            ['#ForkCollector', '#SpaghettiCode', '#NoTests'],
-            ['#TutorialHell', '#GitBlameMe', '#EmptyCommits'],
-            ['#PromptEngineer', '#ChatGPTDev', '#ZeroStars'],
-            ['#10xDeveloper', '#Actually1x', '#NeedsCoffee'],
-            ['#ProductionCrasher', '#YoloDeploys', '#Hotfix'],
-            ['#DivSoup', '#CSSNightmare', '#CenteredDiv'],
-            ['#DependabotOnly', '#AbandonedRepos', '#NodeModules']
-          ];
-
           const mappedRoasts = json.data.slice(0, 5).map((r, index) => {
-            const randomReaction = reactions[index % reactions.length];
-            const randomLevel = roastLevels[index % roastLevels.length];
-            const randomTags = tagSets[index % tagSets.length];
+            const signal = getRoastSignal(r.roast);
             return {
               username: r.username,
               avatar: r.avatar,
-              roastLevel: randomLevel,
+              roastLevel: signal.roastLevel,
               emoji: "🔥", // Fallback
               roast: r.roast.substring(0, 250) + (r.roast.length > 250 ? '...' : ''),
-              tags: randomTags,
-              reaction: randomReaction.text,
-              reactionSentiment: randomReaction.sentiment
+              tags: signal.tags,
+              reaction: buildRelatedComment(r, signal),
+              reactionSentiment: signal.commentField === 'love_life' ? 'Defensive' : signal.commentField === 'life_purpose' ? 'Reflective' : 'Sad',
+              generatedAt: formatRoastTime(r.updated_at)
             };
           });
           setCarouselRoasts(mappedRoasts);
         }
       } catch (e) {
-        console.error("Could not fetch real roasts for carousel", e);
+        // Keep the sample carousel when the backend is unavailable.
       }
     };
     fetchRealRoasts();
