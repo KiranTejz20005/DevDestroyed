@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ConfettiButton } from "@/components/confetti-button";
 import { toast } from 'sonner';
 import config from '../config.json';
@@ -8,6 +8,20 @@ import config from '../config.json';
 export default function UsernameForm({ onSubmitComplete }) {
   const [username, setUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <div
+        className="relative w-full max-w-xl mx-auto h-[72px] sm:h-[80px] rounded-2xl border-2 border-gray-200 bg-white/80 shadow-lg shadow-gray-100/50 animate-pulse"
+        aria-hidden="true"
+      />
+    );
+  }
 
   const sendToAPI = async (username) => {
     try {
