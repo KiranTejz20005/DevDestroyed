@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import config from '../../config.json';
 import Footer from '@/components/Footer';
 import { Toaster, toast } from "sonner";
-import { Check, Share2 } from 'lucide-react';
+import { Check, Share2, Sparkles } from 'lucide-react';
 
 const parseQuestions = (rawQuestions) => {
   try {
@@ -53,6 +54,43 @@ export default function RoastPage() {
     loveLifeAnalysis: false,
     lifePurposeAnalysis: false
   });
+
+  const shouldReduceMotion = useReducedMotion();
+
+  const fadeUpVariants = {
+    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 24 },
+    visible: (i = 0) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: shouldReduceMotion ? 0 : i * 0.12,
+        duration: shouldReduceMotion ? 0 : 0.5,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    }),
+  };
+
+  const cardVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: shouldReduceMotion ? 0 : 30, 
+      scale: shouldReduceMotion ? 1 : 0.96 
+    },
+    visible: (i = 0) => ({
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        delay: shouldReduceMotion ? 0 : 0.3 + i * 0.15,
+        duration: shouldReduceMotion ? 0 : 0.5,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    }),
+    hover: shouldReduceMotion ? {} : {
+      y: -3,
+      transition: { duration: 0.2 },
+    },
+  };
 
   const reactionMessages = [
     "lol", "omg", "wait what", "hold up", "no way", "really?", "oh my...", 
@@ -329,22 +367,66 @@ export default function RoastPage() {
     }
   };
 
-  const RoastCard = ({ title, content, emoji, isLoading, className = "" }) => (
-    <div className={`bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 shadow-xs transition-all duration-300 ${className}`}>
+  const RoastCard = ({ title, content, emoji, isLoading, className = "", index = 0 }) => (
+    <motion.div 
+      className={`bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 shadow-xs transition-all duration-300 ${className}`}
+      variants={cardVariants}
+      custom={index}
+      initial="hidden"
+      whileInView="visible"
+      whileHover="hover"
+      viewport={{ once: true, margin: "-5%" }}
+    >
       <div className="flex items-center space-x-2.5 mb-3">
-        <span className="text-2xl">{emoji}</span>
+        <motion.span 
+          className="text-2xl"
+          animate={!isLoading && !shouldReduceMotion ? { scale: [1, 1.2, 1] } : undefined}
+          transition={{ duration: 0.5, delay: 0.3, ease: 'easeOut' }}
+        >{emoji}</motion.span>
         <h3 className="font-merri text-xl font-light text-black">{title}</h3>
+        {isLoading && (
+          <motion.div
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          >
+            <Sparkles className="w-4 h-4 text-gray-400 ml-1" />
+          </motion.div>
+        )}
       </div>
       {isLoading ? (
-        <div className="space-y-3">
-          <div className="h-4 bg-gray-200 rounded"></div>
-          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-          <div className="h-4 bg-gray-200 rounded w-4/6"></div>
-        </div>
+        <motion.div 
+          className="space-y-3"
+          initial={{ opacity: 0.5 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div 
+            className="h-4 bg-gray-200 rounded"
+            animate={{ width: ['100%', '80%', '100%'] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div 
+            className="h-4 bg-gray-200 rounded w-5/6"
+            animate={{ width: ['83%', '60%', '83%'] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
+          />
+          <motion.div 
+            className="h-4 bg-gray-200 rounded w-4/6"
+            animate={{ width: ['67%', '45%', '67%'] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+          />
+        </motion.div>
       ) : (
-        <p className="font-pop text-black/80 leading-relaxed">{content}</p>
+        <motion.p 
+          className="font-pop text-black/80 leading-relaxed"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
+          {content}
+        </motion.p>
       )}
-    </div>
+    </motion.div>
   );
 
   if (loading) {
@@ -440,21 +522,50 @@ export default function RoastPage() {
       )}
 
       {showRoastResults && (
-        <div className="min-h-screen py-8 px-4 sm:p-6 lg:p-8">
+        <motion.div 
+          className="min-h-screen py-8 px-4 sm:p-6 lg:p-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: shouldReduceMotion ? 0 : 0.5 }}
+        >
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-8">
-              <h1 className="font-merri text-4xl sm:text-5xl font-light text-black mb-2 tracking-tight">
+            <motion.div 
+              className="text-center mb-8"
+              variants={fadeUpVariants}
+              initial="hidden"
+              animate="visible"
+              custom={0}
+            >
+              <motion.h1 
+                className="font-merri text-4xl sm:text-5xl font-light text-black mb-2 tracking-tight"
+                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: [0.22, 1, 0.36, 1] }}
+              >
                 Your Roast
-              </h1>
-              <p className="font-pop text-black/60 text-lg">
-                Here's what we found lurking in your GitHub history
-              </p>
-            </div>
+              </motion.h1>
+              <motion.p 
+                className="font-pop text-black/60 text-lg"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: shouldReduceMotion ? 0 : 0.2, duration: shouldReduceMotion ? 0 : 0.4 }}
+              >
+                Here&rsquo;s what we found lurking in your GitHub history
+              </motion.p>
+            </motion.div>
 
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-              <div 
+            {/* Navigation Bar */}
+            <motion.div 
+              className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4"
+              variants={fadeUpVariants}
+              initial="hidden"
+              animate="visible"
+              custom={1}
+            >
+              <motion.div 
                 onClick={() => window.location.href = '/'}
                 className="flex items-center space-x-2 text-black/70 hover:text-black transition-colors cursor-pointer group"
+                whileHover={shouldReduceMotion ? undefined : { x: -2 }}
               >
                 <svg 
                   className="w-4 h-4 transition-transform duration-250 group-hover:-translate-x-0.5" 
@@ -465,11 +576,12 @@ export default function RoastPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 <span className="font-pop text-sm font-medium">Back to Home</span>
-              </div>
+              </motion.div>
 
-              <div 
+              <motion.div 
                 onClick={handleShare}
                 className="flex items-center space-x-2 text-black/70 hover:text-black transition-colors cursor-pointer group"
+                whileHover={shouldReduceMotion ? undefined : { y: -1 }}
               >
                 <div className="relative w-4 h-4">
                   <Share2 
@@ -482,13 +594,23 @@ export default function RoastPage() {
                 <span className="font-pop text-sm font-medium">
                   {isShared ? 'Copied!' : 'Share Roast'}
                 </span>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
-            <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-xs mb-8">
+            {/* User Profile Card */}
+            <motion.div 
+              className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-xs mb-8"
+              variants={cardVariants}
+              initial="hidden"
+              animate="visible"
+              custom={2}
+            >
               <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
-
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center overflow-hidden">
+                <motion.div 
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center overflow-hidden"
+                  whileHover={shouldReduceMotion ? undefined : { scale: 1.05 }}
+                  transition={{ duration: 0.2 }}
+                >
                   {userData?.avatar ? (
                     <img 
                       src={userData.avatar} 
@@ -496,45 +618,62 @@ export default function RoastPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gray-200 animate-pulse"></div>
+                    <motion.div 
+                      className="w-full h-full bg-gray-200"
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    />
                   )}
-                </div>
+                </motion.div>
 
                 <div className="text-center sm:text-left flex-1">
                   <h2 className="font-merri text-2xl sm:text-3xl font-light text-black mb-2">
                     {userData?.username ? `u/${userData.username}` : (
-                      <div className="h-8 bg-gray-200 rounded animate-pulse w-32 mx-auto sm:mx-0"></div>
+                      <motion.div 
+                        className="h-8 bg-gray-200 rounded w-32 mx-auto sm:mx-0"
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      />
                     )}
                   </h2>
 
                   <div className="flex cursor-pointer flex-wrap justify-center sm:justify-start gap-2 mt-4">
                     {userData?.languages ? userData.languages.map((lang, index) => (
-                      <span 
+                      <motion.span 
                         key={index}
                         onClick={() => window.open(`https://github.com/topics/${userData?.languages[index].name.toLowerCase()}`, '_blank', 'noopener,noreferrer')} 
-                        className="bg-black/5 text-black/70 hover:bg-black/6 transition-all duration-300 px-3 py-1 rounded-full text-sm font-pop"
+                        className="bg-black/5 text-black/70 hover:bg-black/6 transition-all duration-300 px-3 py-1 rounded-full text-sm font-pop cursor-pointer"
+                        whileHover={shouldReduceMotion ? undefined : { scale: 1.05, y: -1 }}
                       >
                         {lang.name} ({lang.percentage}%)
-                      </span>
+                      </motion.span>
                     )) : (
                       Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="h-6 bg-gray-200 rounded-full animate-pulse w-20"></div>
+                        <motion.div 
+                          key={i} 
+                          className="h-6 bg-gray-200 rounded-full w-20"
+                          animate={{ opacity: [0.5, 1, 0.5] }}
+                          transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
+                        />
                       ))
                     )}
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
+            {/* Main Roast Card */}
             <div className="mb-6">
               <RoastCard
                 title="Roast"
                 content={aiSummaries.detailedRoast}
                 emoji="🔥"
                 isLoading={!aiSummariesComplete.detailedRoast}
+                index={3}
               />
             </div>
 
+            {/* Analysis Cards Grid */}
             <div className="columns-1 lg:columns-2 gap-6 space-y-6">
               <div className="break-inside-avoid mb-6">
                 <RoastCard
@@ -542,6 +681,7 @@ export default function RoastPage() {
                   content={aiSummaries.strengthAnalysis}
                   emoji="💪"
                   isLoading={!aiSummariesComplete.strengthAnalysis}
+                  index={4}
                 />
               </div>
 
@@ -551,6 +691,7 @@ export default function RoastPage() {
                   content={aiSummaries.weaknessAnalysis}
                   emoji="🌙"
                   isLoading={!aiSummariesComplete.weaknessAnalysis}
+                  index={5}
                 />
               </div>
 
@@ -560,6 +701,7 @@ export default function RoastPage() {
                   content={aiSummaries.loveLifeAnalysis}
                   emoji="🦋"
                   isLoading={!aiSummariesComplete.loveLifeAnalysis}
+                  index={6}
                 />
               </div>
 
@@ -569,15 +711,21 @@ export default function RoastPage() {
                   content={aiSummaries.lifePurposeAnalysis}
                   emoji="🐺"
                   isLoading={!aiSummariesComplete.lifePurposeAnalysis}
+                  index={7}
                 />
               </div>
             </div>
 
           </div>
-          <div className='opacity-[97.5%] mt-14'>
+          <motion.div 
+            className='opacity-[97.5%] mt-14'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: shouldReduceMotion ? 0 : 0.8, duration: 0.5 }}
+          >
             <Footer />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );

@@ -3,6 +3,24 @@ import { supabase } from '../lib/supabase.js'
 
 const router = new Hono()
 
+router.get('/count', async (c) => {
+  try {
+    const { count, error } = await supabase
+      .from('roasts')
+      .select('*', { count: 'exact', head: true })
+      .not('roast', 'is', null)
+
+    if (error) {
+      throw error
+    }
+
+    return c.json({ success: true, count })
+  } catch (error) {
+    console.error('Error fetching roast count:', error)
+    return c.json({ success: false, message: 'Server error' }, 500)
+  }
+})
+
 router.get('/history/recent', async (c) => {
   try {
     const { data: roasts, error } = await supabase

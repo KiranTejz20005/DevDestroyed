@@ -10,6 +10,9 @@ import config from '../config.json';
 import RoastCarousel from "@/components/RoastCarousel";
 import FAQ from "@/components/FAQ";
 import LoadingOverlay from "@/components/LoadingOverlay";
+import AnimatedCounter from "@/components/AnimatedCounter";
+import ProcessTimeline from "@/components/ProcessTimeline";
+import RandomRoastGenerator from "@/components/RandomRoastGenerator";
 
 const SAMPLE_ROASTS = [
   {
@@ -176,6 +179,25 @@ function PageContent() {
       },
     },
   };
+
+  const [realStats, setRealStats] = useState({ roastCount: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/roast/history/recent');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data)) {
+            setRealStats({ roastCount: json.data.length });
+          }
+        }
+      } catch (e) {
+        // Keep default values when backend is unavailable
+      }
+    };
+    fetchStats();
+  }, []);
 
   useEffect(() => {
     const fetchRealRoasts = async () => {
@@ -411,25 +433,30 @@ function PageContent() {
               ))}
             </motion.div>
 
-            {/* <div className="mt-32 border-t border-gray-100 pt-16">
+            {/* Stats Counter Section */}
+            <motion.div 
+              className="mt-32 border-t border-gray-100 pt-16"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, margin: "-10%" }}
+            >
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                {[
-                  { label: "Profiles Roasted", value: "10k+" },
-                  { label: "Egos Destroyed", value: "99%" },
-                  // { label: "AI Models", value: "GPT-4" },
-                  { label: "Accuracy", value: "100%" },
-                ].map((stat, i) => (
-                  <div key={i} className="text-center">
-                    <div className="font-space text-3xl sm:text-4xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                    <div className="font-outfit text-sm text-gray-400 uppercase tracking-wider font-medium">{stat.label}</div>
-                  </div>
-                ))}
+                <AnimatedCounter value={realStats.roastCount} label="Profiles Roasted" duration={2.5} />
+                <AnimatedCounter value={realStats.roastCount} label="Egos Destroyed" duration={2} />
+                <AnimatedCounter value={realStats.roastCount} label="Roasts Generated" duration={3} />
+                <AnimatedCounter value={realStats.roastCount > 0 ? realStats.roastCount : 0} label="Truths Delivered" duration={2} />
               </div>
-            </div>
-
-            <p className="font-outfit text-sm text-gray-400 mt-12 tracking-wide">
-              Crafted with precision. Delivered without mercy.
-            </p>
+              
+              <motion.p 
+                className="font-outfit text-sm text-gray-400 mt-12 tracking-wide text-center"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                Crafted with precision. Delivered without mercy.
+              </motion.p>
+            </motion.div>
 
             {/* What You'll Get Section */}
             <motion.div className="mt-20 sm:mt-32 max-w-4xl mx-auto" variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-15%" }}>
@@ -476,7 +503,7 @@ function PageContent() {
               </motion.div>
             </motion.div>
 
-            {/* How It Works Section */}
+            {/* How It Works Section - Enhanced with Timeline */}
             <motion.div className="mt-32 max-w-5xl mx-auto px-4" variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-10%" }}>
               <div className="text-center mb-16">
                 <motion.div variants={fadeUp} className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-red-50 border border-red-100 shadow-sm mb-6">
@@ -486,53 +513,14 @@ function PageContent() {
                     From Data to Destruction
                 </motion.h2>
                 <motion.p variants={fadeUp} className="font-outfit text-lg text-gray-500 max-w-2xl mx-auto">
-                    A three-step process designed to dismantle your self-esteem efficiently.
+                    A four-step process designed to dismantle your self-esteem efficiently.
                 </motion.p>
-               </div>
-               
-              <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6" variants={staggerContainer}>
-                  
-                  {[
-                    { 
-                      step: "01", 
-                      emoji: "🕵️‍♂️",
-                      title: "Scraping Your Repos", 
-                      desc: "We scrape every public repo, commit message, and embarrassing tutorial you've ever fork'd. We see it all.",
-                      color: "text-blue-600",
-                      bg: "bg-blue-50 border-blue-100"
-                    },
-                    { 
-                      step: "02", 
-                      emoji: "🧠",
-                      title: "Psychoanalysis", 
-                      desc: "Our AI judges your naming conventions, your tech stack, and your desperate need for stars. It builds a psychological profile of a dev.",
-                      color: "text-purple-600",
-                      bg: "bg-purple-50 border-purple-100" 
-                    },
-                    { 
-                      step: "03", 
-                      emoji: "🔥",
-                      title: "Emotional Damage", 
-                      desc: "We generate a customized roast that targets your specific insecurities. It's not cyberbullying if it's true (legal told us to say this).",
-                      color: "text-orange-600",
-                      bg: "bg-orange-50 border-orange-100"
-                    }
-                  ].map((item, i) => (
-                    <motion.div key={i} variants={cardFade} className={`relative flex flex-col items-start text-left group bg-white border border-gray-100 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden`} whileHover={shouldReduceMotion ? undefined : { y: -6, scale: 1.01 }}>
-                      <div className={`absolute top-0 right-0 p-8 opacity-10 font-space font-bold text-6xl text-gray-900 select-none group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500`}>
-                        {item.step}
-                      </div>
-                      
-                      <div className={`w-14 h-14 ${item.bg} border ${item.color} rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300 relative z-10`}>
-                        {item.emoji}
-                      </div>
-
-                      <h3 className="font-space font-bold text-xl text-gray-900 mb-3 relative z-10">{item.title}</h3>
-                      <p className="text-gray-500 font-outfit text-base leading-relaxed relative z-10">{item.desc}</p>
-                      </motion.div>
-                  ))}
-                  </motion.div>
-                </motion.div>
+              </div>
+              
+              <motion.div variants={cardFade}>
+                <ProcessTimeline />
+              </motion.div>
+            </motion.div>
 
             {/* Sample Roast Section - Vercel Style */}
             <motion.div className="mt-32 max-w-4xl mx-auto px-4" variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-10%" }}>
@@ -546,7 +534,15 @@ function PageContent() {
               </motion.div>
             </motion.div>
 
-            {/* FAQ Section - Onavix Inspired Clean Card */}
+            {/* Random Roast Generator */}
+            <motion.div 
+              className="mt-32 max-w-4xl mx-auto px-4"
+              variants={cardFade}
+            >
+              <RandomRoastGenerator />
+            </motion.div>
+
+            {/* FAQ Section */}
             <motion.div variants={cardFade}>
               <FAQ />
             </motion.div>

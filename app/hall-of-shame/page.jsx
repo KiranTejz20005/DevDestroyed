@@ -1,16 +1,48 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/Footer';
 import Background from '@/components/Background';
-import { ArrowLeft, Flame } from 'lucide-react';
+import { ArrowLeft, Flame, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 // switched to same-origin API proxy to avoid CORS
 
 export default function HallOfShame() {
   const [roasts, setRoasts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showConfetti, setShowConfetti] = useState(false);
   const router = useRouter();
+  const shouldReduceMotion = useReducedMotion();
+  const sectionRef = useRef(null);
+
+  const cardVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: shouldReduceMotion ? 0 : 30, 
+      scale: shouldReduceMotion ? 1 : 0.95 
+    },
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        damping: 15,
+        stiffness: 100,
+        delay: shouldReduceMotion ? 0 : i * 0.1,
+      },
+    }),
+    hover: shouldReduceMotion ? {} : {
+      y: -8,
+      scale: 1.02,
+      transition: {
+        type: "spring",
+        damping: 10,
+        stiffness: 200,
+      },
+    },
+  };
 
   useEffect(() => {
     const fetchRoasts = async () => {
@@ -58,48 +90,81 @@ export default function HallOfShame() {
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+          <motion.div 
+            ref={sectionRef}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full"
+            initial="hidden"
+            animate="visible"
+          >
             {roasts.map((r, i) => (
-              <div 
+              <motion.div 
                 key={i} 
+                custom={i}
+                variants={cardVariants}
+                whileHover="hover"
                 onClick={() => router.push(`/roast?user=${encodeURIComponent(r.username)}`)}
-                className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
+                className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm cursor-pointer group relative overflow-hidden"
               >
-                <div className="flex items-center justify-between mb-4">
+                {/* Gradient hover overlay */}
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-br from-orange-50/0 via-orange-50/0 to-orange-100/0 group-hover:to-orange-100/40 transition-all duration-500"
+                  initial={false}
+                />
+                
+                <div className="flex items-center justify-between mb-4 relative z-10">
                   <div className="flex items-center gap-4">
                     {r.avatar ? (
                       <Image src={r.avatar} alt={r.username} width={48} height={48} className="rounded-full ring-2 ring-gray-100" />
                     ) : (
-                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-xl font-bold">
-                        {r.username[0].toUpperCase()}
+                      <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center text-xl font-bold text-gray-600">
+                        {r.username?.[0]?.toUpperCase() ?? '?'}
                       </div>
                     )}
                     <div>
-                      <h3 className="font-bold text-gray-900 font-space text-lg">@{r.username}</h3>
+                      <h3 className="font-bold text-gray-900 font-space text-lg group-hover:text-orange-600 transition-colors duration-300">@{r.username}</h3>
                       <p className="text-xs text-gray-400 font-mono">
                         {new Date(r.updated_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
-                  <div className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-bold font-mono group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                  <motion.div 
+                    className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-bold font-mono"
+                    whileHover={shouldReduceMotion ? undefined : { scale: 1.05 }}
+                  >
                     View Roast
-                  </div>
+                  </motion.div>
                 </div>
                 
-                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100/50">
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100/50 relative z-10">
                   <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed italic">
-                    "{r.roast}"
+                    &ldquo;{r.roast}&rdquo;
                   </p>
                 </div>
-              </div>
+
+                {/* Roast index badge */}
+                <div className="absolute top-3 right-3 text-4xl font-black text-gray-100 select-none -z-0 group-hover:text-orange-100 transition-colors duration-500">
+                  #{i + 1}
+                </div>
+              </motion.div>
             ))}
             
             {roasts.length === 0 && (
-              <div className="col-span-1 md:col-span-2 text-center py-20 text-gray-500 font-mono">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="col-span-1 md:col-span-2 text-center py-20 text-gray-500 font-mono"
+              >
+                <motion.div 
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="text-6xl mb-4"
+                >
+                  🫗
+                </motion.div>
                 No souls have been roasted yet. Be the first.
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         )}
       </main>
       
