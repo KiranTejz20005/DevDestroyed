@@ -7,6 +7,7 @@ import config from '../config.json';
 
 export default function UsernameForm({ onSubmitComplete }) {
   const [username, setUsername] = useState('');
+  const [platform, setPlatform] = useState('github');
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -25,14 +26,18 @@ export default function UsernameForm({ onSubmitComplete }) {
 
   const sendToAPI = async (username) => {
     try {
-      const response = await fetch(`${config.url}/api/responses`, {
+      const endpoint = platform === 'github' ? '/api/responses' : '/api/roast/linkedin';
+      const bodyPayload = platform === 'github' ? { username } : { profileUrl: username };
+      
+      // Force local backend to bypass browser cache of config.json pointing to production
+      const apiUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : config.url;
+      
+      const response = await fetch(`${apiUrl}${endpoint}?t=${Date.now()}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          username: username
-        }),
+        body: JSON.stringify(bodyPayload),
       });
 
       if (!response.ok) {
@@ -63,9 +68,9 @@ export default function UsernameForm({ onSubmitComplete }) {
         const apiResponse = await sendToAPI(username.trim());
 
         if (apiResponse.success) {
-          const finalUsername = apiResponse.username || username.trim();
+          const finalUsername = apiResponse.username || (platform === 'linkedin' ? apiResponse.profile?.profileUrl : username.trim());
           window.dispatchEvent(new CustomEvent('roastComplete', { 
-            detail: { username: finalUsername } 
+            detail: { username: finalUsername, platform } 
           }));
 
           // We don't reset homepage here because we want the LoadingOverlay to stay visible
@@ -74,14 +79,12 @@ export default function UsernameForm({ onSubmitComplete }) {
             setIsLoading(false);
           }, 1000);
         } else {
-          clearTimeout(loadingTimeout);
           toast.error(apiResponse.message || 'An unknown error occurred.');
           setIsLoading(false);
           window.dispatchEvent(new CustomEvent('roastError'));
         }
         
       } catch (error) {
-        clearTimeout(loadingTimeout);
         console.error('Error during process:', error);
 
         if (error.message === 'USER_NOT_FOUND') {
@@ -98,17 +101,39 @@ export default function UsernameForm({ onSubmitComplete }) {
 
   return (
     <div className="relative w-full max-w-xl mx-auto">
+      <div className="flex justify-center mb-6 space-x-4">
+        <button
+          onClick={() => setPlatform('github')}
+          className={`px-4 py-2 rounded-full font-space font-medium text-sm transition-all duration-300 ${
+            platform === 'github'
+              ? 'bg-black text-white shadow-md'
+              : 'bg-white/60 text-gray-600 hover:bg-white'
+          }`}
+        >
+          GitHub
+        </button>
+        <button
+          onClick={() => setPlatform('linkedin')}
+          className={`px-4 py-2 rounded-full font-space font-medium text-sm transition-all duration-300 ${
+            platform === 'linkedin'
+              ? 'bg-[#0077b5] text-white shadow-md'
+              : 'bg-white/60 text-gray-600 hover:bg-white'
+          }`}
+        >
+          LinkedIn
+        </button>
+      </div>
       <form onSubmit={handleSubmit} className="relative z-10">
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-2 sm:px-1.5 sm:py-1.5 sm:bg-white sm:rounded-2xl sm:border-2 sm:border-gray-200 sm:shadow-lg sm:shadow-gray-100/50 transition-all duration-300 sm:hover:shadow-xl sm:hover:shadow-gray-100/80 sm:focus-within:shadow-xl sm:focus-within:border-gray-300 sm:focus-within:ring-4 sm:focus-within:ring-gray-100/50">
           <div className="flex-1 relative flex py-3 sm:py-0 items-center h-12 sm:h-auto bg-white sm:bg-transparent rounded-xl sm:rounded-xl border-2 sm:border-0 border-gray-200 sm:border-transparent px-1 sm:px-0">
             <span className="absolute left-4 text-gray-400 font-space font-medium select-none text-lg">
-              @
+              {platform === 'github' ? '@' : '🔗'}
             </span>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter GitHub username"
+              placeholder={platform === 'github' ? "Enter GitHub username" : "Enter LinkedIn URL"}
               disabled={isLoading}
               className="w-full h-full bg-transparent outline-none text-lg font-outfit font-medium text-gray-900 placeholder-gray-400 pl-10 pr-4 rounded-xl"
             />

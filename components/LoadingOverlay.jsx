@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import Background from "@/components/Background";
 
-export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRedirect, username }) {
+export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRedirect, username, platform = 'github' }) {
   const [loadingStep, setLoadingStep] = useState(0);
   const [trainingCount, setTrainingCount] = useState(0);
   const [finalizationProgress, setFinalizationProgress] = useState(0);
@@ -121,7 +121,7 @@ export default function LoadingOverlay({ show, onComplete, hasApiError, shouldRe
   useEffect(() => {
     if (shouldRedirect && finalizationProgress >= 100 && username) {
        setTimeout(() => {
-         window.location.href = `/roast?user=${encodeURIComponent(username)}`;
+         window.location.href = `/roast?user=${encodeURIComponent(username)}&type=${platform}`;
        }, 1000);
     }
   }, [shouldRedirect, finalizationProgress, username]);
