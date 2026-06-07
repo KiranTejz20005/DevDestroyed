@@ -14,7 +14,7 @@ const limiter = rateLimiter({
   keyGenerator: (c) => c.req.header('x-forwarded-for') || c.req.ip,
 })
 
-async function getAIResponse(prompt) {
+export async function getAIResponse(prompt) {
   // ── 1. NVIDIA NIM (primary) ──────────────────────────────────────────────
   if (process.env.NVIDIA_API_KEY) {
     try {

@@ -5,6 +5,7 @@ import { serve } from '@hono/node-server';
 
 import responseRouter from './routes/response.js';
 import roastRouter from './routes/roast.js';
+import linkedinRoastRouter from './routes/linkedinRoast.js';
 
 const app = new Hono();
 
@@ -28,6 +29,7 @@ app.get('/', (c) => c.text('Hello World!'));
 
 app.route('/api/responses', responseRouter);
 app.route('/api/roast', roastRouter);
+app.route('/api/roast/linkedin', linkedinRoastRouter);
 
 serve({
   fetch: app.fetch,
