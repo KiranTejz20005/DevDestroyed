@@ -6,6 +6,7 @@ import config from '../../config.json';
 import Footer from '@/components/Footer';
 import { Toaster, toast } from "sonner";
 import { Check, Share2, Sparkles } from 'lucide-react';
+import LinkedInRoastDisplay from '@/components/LinkedInRoastDisplay';
 
 const parseQuestions = (rawQuestions) => {
   try {
@@ -38,6 +39,8 @@ export default function RoastPage() {
   const [userData, setUserData] = useState(null);
   const [showRoastResults, setShowRoastResults] = useState(false);
   const [isShared, setIsShared] = useState(false);
+  const [platformType, setPlatformType] = useState('github');
+  const [linkedinData, setLinkedinData] = useState(null);
 
   const [aiSummaries, setAiSummaries] = useState({
     detailedRoast: null,
@@ -146,7 +149,14 @@ export default function RoastPage() {
         };
 
         try {
-            const response = await fetch(`${config.url}/api/roast/${encodeURIComponent(username)}`);
+            const platform = urlParams.get('type') || 'github';
+            setPlatformType(platform);
+
+            const endpoint = platform === 'linkedin' 
+                ? `${config.url}/api/roast/linkedin/${encodeURIComponent(username)}`
+                : `${config.url}/api/roast/${encodeURIComponent(username)}`;
+
+            const response = await fetch(endpoint);
             const data = await response.json();
 
             if (!data.success) {
@@ -161,6 +171,26 @@ export default function RoastPage() {
                 setRoastData(parsedQuestions);
                 setLoading(false);
                 startChatSequence(parsedQuestions);
+            } else if (platform === 'linkedin') {
+                if (data.data) {
+                    setLinkedinData(data);
+                    setLoading(false);
+                } else {
+                    // Start polling for linkedin
+                    intervalId = setInterval(async () => {
+                        try {
+                            const pollResponse = await fetch(endpoint);
+                            const pollData = await pollResponse.json();
+                            if (pollData.success && pollData.data) {
+                                setLinkedinData(pollData);
+                                setLoading(false);
+                                clearInterval(intervalId);
+                            }
+                        } catch (err) {
+                            console.error(err);
+                        }
+                    }, 2000);
+                }
             } else if (data.type === 'summaries') {
                 setShowRoastResults(true);
                 setLoading(false);
@@ -171,7 +201,7 @@ export default function RoastPage() {
                 if (!allComplete) {
                     intervalId = setInterval(async () => {
                         try {
-                            const pollResponse = await fetch(`${config.url}/api/roast/${encodeURIComponent(username)}`);
+                            const pollResponse = await fetch(endpoint);
                             const pollData = await pollResponse.json();
 
                             if (pollData.success && pollData.type === 'summaries') {
@@ -460,8 +490,17 @@ export default function RoastPage() {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-white to-gray-50 overflow-hidden">
       <Toaster theme="light" position="bottom-right" richColors />
-      {!showRoastResults && (
-        <div className="relative">
+      
+      {platformType === 'linkedin' && linkedinData ? (
+        <LinkedInRoastDisplay 
+          roastData={linkedinData.data} 
+          profileData={linkedinData.profile} 
+          onHome={() => window.location.href = '/'} 
+        />
+      ) : (
+        <>
+          {!showRoastResults && (
+            <div className="relative">
           <div className="min-h-screen p-4">
             <div className="max-w-2xl mx-auto pt-8">
               <div className="space-y-6">
@@ -726,6 +765,8 @@ export default function RoastPage() {
             <Footer />
           </motion.div>
         </motion.div>
+      )}
+      </>
       )}
     </div>
   );

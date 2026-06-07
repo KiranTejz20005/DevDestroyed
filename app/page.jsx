@@ -141,6 +141,7 @@ function PageContent() {
   const [showLoadingPage, setShowLoadingPage] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [targetUser, setTargetUser] = useState("");
+  const [platform, setPlatform] = useState("github");
   const [hasApiError, setHasApiError] = useState(false);
   const [carouselRoasts, setCarouselRoasts] = useState(SAMPLE_ROASTS);
   const shouldReduceMotion = useReducedMotion();
@@ -236,6 +237,9 @@ function PageContent() {
     const handleRoastComplete = (e) => {
       if (e.detail?.username) {
         setTargetUser(e.detail.username);
+      }
+      if (e.detail?.platform) {
+        setPlatform(e.detail.platform);
       }
       setShouldRedirect(true);
     };
@@ -558,6 +562,7 @@ function PageContent() {
         show={showLoadingPage} 
         shouldRedirect={shouldRedirect}
         username={targetUser}
+        platform={platform}
         hasApiError={hasApiError}
       />
     </div>
