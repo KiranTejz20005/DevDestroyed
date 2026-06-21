@@ -8,6 +8,8 @@ import Background from "@/components/Background";
 import { Toaster, toast } from "sonner";
 import config from '../config.json';
 import RoastCarousel from "@/components/RoastCarousel";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : config.url);
 import FAQ from "@/components/FAQ";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import AnimatedCounter from "@/components/AnimatedCounter";
@@ -203,7 +205,7 @@ function PageContent() {
   useEffect(() => {
     const fetchRealRoasts = async () => {
       try {
-        const res = await fetch(`${config.url}/api/roast/history/recent`);
+        const res = await fetch(`${API_URL}/api/roast/history/recent`);
         if (!res.ok) {
           return;
         }
@@ -273,7 +275,7 @@ function PageContent() {
 
       setTimeout(async () => {
         try {
-          const response = await fetch(`${config.url}/api/responses`, {
+          const response = await fetch(`${API_URL}/api/responses`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

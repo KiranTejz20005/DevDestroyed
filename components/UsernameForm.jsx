@@ -29,8 +29,8 @@ export default function UsernameForm({ onSubmitComplete }) {
       const endpoint = platform === 'github' ? '/api/responses' : '/api/roast/linkedin';
       const bodyPayload = platform === 'github' ? { username } : { profileUrl: username };
       
-      // Force local backend to bypass browser cache of config.json pointing to production
-      const apiUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : config.url;
+      // Use NEXT_PUBLIC_API_URL if set (useful for Vercel/production deployment), falling back to localhost or config.url
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : config.url);
       
       const response = await fetch(`${apiUrl}${endpoint}?t=${Date.now()}`, {
         method: 'POST',
@@ -101,28 +101,6 @@ export default function UsernameForm({ onSubmitComplete }) {
 
   return (
     <div className="relative w-full max-w-xl mx-auto">
-      <div className="flex justify-center mb-6 space-x-4">
-        <button
-          onClick={() => setPlatform('github')}
-          className={`px-4 py-2 rounded-full font-space font-medium text-sm transition-all duration-300 ${
-            platform === 'github'
-              ? 'bg-black text-white shadow-md'
-              : 'bg-white/60 text-gray-600 hover:bg-white'
-          }`}
-        >
-          GitHub
-        </button>
-        <button
-          onClick={() => setPlatform('linkedin')}
-          className={`px-4 py-2 rounded-full font-space font-medium text-sm transition-all duration-300 ${
-            platform === 'linkedin'
-              ? 'bg-[#0077b5] text-white shadow-md'
-              : 'bg-white/60 text-gray-600 hover:bg-white'
-          }`}
-        >
-          LinkedIn
-        </button>
-      </div>
       <form onSubmit={handleSubmit} className="relative z-10">
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-2 sm:px-1.5 sm:py-1.5 sm:bg-white sm:rounded-2xl sm:border-2 sm:border-gray-200 sm:shadow-lg sm:shadow-gray-100/50 transition-all duration-300 sm:hover:shadow-xl sm:hover:shadow-gray-100/80 sm:focus-within:shadow-xl sm:focus-within:border-gray-300 sm:focus-within:ring-4 sm:focus-within:ring-gray-100/50">
           <div className="flex-1 relative flex py-3 sm:py-0 items-center h-12 sm:h-auto bg-white sm:bg-transparent rounded-xl sm:rounded-xl border-2 sm:border-0 border-gray-200 sm:border-transparent px-1 sm:px-0">

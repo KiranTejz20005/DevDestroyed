@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import config from '../../config.json';
 import Footer from '@/components/Footer';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : config.url);
 import { Toaster, toast } from "sonner";
 import { Check, Share2, Sparkles } from 'lucide-react';
 import LinkedInRoastDisplay from '@/components/LinkedInRoastDisplay';
@@ -153,8 +155,8 @@ export default function RoastPage() {
             setPlatformType(platform);
 
             const endpoint = platform === 'linkedin' 
-                ? `${config.url}/api/roast/linkedin/${encodeURIComponent(username)}`
-                : `${config.url}/api/roast/${encodeURIComponent(username)}`;
+                ? `${API_URL}/api/roast/linkedin/${encodeURIComponent(username)}`
+                : `${API_URL}/api/roast/${encodeURIComponent(username)}`;
 
             const response = await fetch(endpoint);
             const data = await response.json();
@@ -374,7 +376,7 @@ export default function RoastPage() {
       const urlParams = new URLSearchParams(window.location.search);
       const username = urlParams.get('user');
       try {
-        await fetch(`${config.url}/api/roast/${encodeURIComponent(username)}/seen`, { method: 'POST' });
+        await fetch(`${API_URL}/api/roast/${encodeURIComponent(username)}/seen`, { method: 'POST' });
       } catch (err) {
         console.error("Failed to mark questions as seen:", err);
       }

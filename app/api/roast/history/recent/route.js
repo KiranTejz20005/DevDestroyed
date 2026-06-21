@@ -1,7 +1,8 @@
 import config from '../../../../../config.json';
 
 export async function GET(req) {
-  const target = `${config.url}/api/roast/history/recent`;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || config.url;
+  const target = `${apiUrl}/api/roast/history/recent`;
   try {
     const res = await fetch(target);
     const body = await res.text();
