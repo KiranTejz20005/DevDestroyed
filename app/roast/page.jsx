@@ -43,6 +43,7 @@ export default function RoastPage() {
   const [isShared, setIsShared] = useState(false);
   const [platformType, setPlatformType] = useState('github');
   const [linkedinData, setLinkedinData] = useState(null);
+  const [isBadgeCopied, setIsBadgeCopied] = useState(false);
 
   const [aiSummaries, setAiSummaries] = useState({
     detailedRoast: null,
@@ -399,6 +400,23 @@ export default function RoastPage() {
     }
   };
 
+  const handleCopyBadge = async () => {
+    if (!userData?.username) return;
+    const badgeUrl = `${window.location.origin}/api/badge/u/${userData.username}.svg`;
+    const profileUrl = `${window.location.origin}/roast?user=${userData.username}`;
+    const markdownCode = `[![DevDestroyed Roast](${badgeUrl})](${profileUrl})`;
+    
+    try {
+      await navigator.clipboard.writeText(markdownCode);
+      setIsBadgeCopied(true);
+      toast.success("Badge Markdown copied!");
+      setTimeout(() => setIsBadgeCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy badge:', err);
+      toast.error("Failed to copy badge markdown");
+    }
+  };
+
   const RoastCard = ({ title, content, emoji, isLoading, className = "", index = 0 }) => (
     <motion.div 
       className={`bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 shadow-xs transition-all duration-300 ${className}`}
@@ -702,6 +720,46 @@ export default function RoastPage() {
                 </div>
               </div>
             </motion.div>
+
+            {/* GitHub Profile Badge Component */}
+            {userData?.username && (
+              <motion.div 
+                className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-6 shadow-xs mb-8"
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                custom={2.5}
+              >
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex-1 text-center sm:text-left">
+                    <h3 className="font-space font-bold text-lg text-black mb-1 flex items-center justify-center sm:justify-start gap-2">
+                      <span>🎨 Brag on your GitHub Profile</span>
+                    </h3>
+                    <p className="font-pop text-sm text-gray-500">
+                      Copy this Markdown to show off your DevDestroyed roast level badge on your GitHub README.
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-col items-center gap-3 w-full sm:w-auto">
+                    <div className="bg-black/5 p-2.5 rounded-lg flex items-center justify-center min-h-[40px] w-full sm:w-auto">
+                      <img 
+                        src={`/api/badge/u/${userData.username}.svg`} 
+                        alt="DevDestroyed Roast Badge"
+                        className="h-5 select-none"
+                      />
+                    </div>
+                    
+                    <button
+                      onClick={handleCopyBadge}
+                      className="w-full sm:w-auto bg-black text-white hover:bg-black/90 font-space font-medium text-sm px-6 py-2.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      <span>{isBadgeCopied ? 'Copied!' : 'Copy Markdown'}</span>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
             {/* Main Roast Card */}
             <div className="mb-6">
