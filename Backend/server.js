@@ -22,11 +22,20 @@ app.use('*', cors({
 
 const port = process.env.PORT || 3001;
 
-app.get('/', (c) => c.text('Hello World!'));
+app.get('/', (c) => c.json({ status: 'ok', message: 'DevDestroyed API is running' }));
 
 app.route('/api/responses', responseRouter);
 app.route('/api/roast', roastRouter);
 app.route('/api/roast/linkedin', linkedinRoastRouter);
+
+app.onError((err, c) => {
+  console.error('Unhandled API Error:', err);
+  return c.json({ success: false, message: 'Internal server error', error: err.message }, 500);
+});
+
+app.notFound((c) => {
+  return c.json({ success: false, message: 'Route not found' }, 404);
+});
 
 serve({
   fetch: app.fetch,

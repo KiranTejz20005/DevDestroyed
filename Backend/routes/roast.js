@@ -5,6 +5,9 @@ const router = new Hono()
 
 router.get('/count', async (c) => {
   try {
+    if (!supabase) {
+      return c.json({ success: true, count: 0, warning: 'Supabase credentials missing' })
+    }
     const { count, error } = await supabase
       .from('roasts')
       .select('*', { count: 'exact', head: true })
@@ -17,12 +20,15 @@ router.get('/count', async (c) => {
     return c.json({ success: true, count })
   } catch (error) {
     console.error('Error fetching roast count:', error)
-    return c.json({ success: false, message: 'Server error' }, 500)
+    return c.json({ success: false, message: 'Server error', error: error.message }, 500)
   }
 })
 
 router.get('/history/recent', async (c) => {
   try {
+    if (!supabase) {
+      return c.json({ success: true, data: [], warning: 'Supabase credentials missing' })
+    }
     const { data: roasts, error } = await supabase
       .from('roasts')
       .select('username, avatar, updated_at, roast, strength, weakness, love_life, life_purpose')
@@ -37,7 +43,7 @@ router.get('/history/recent', async (c) => {
     return c.json({ success: true, data: roasts })
   } catch (error) {
     console.error('Error fetching history:', error)
-    return c.json({ success: false, message: 'Server error' }, 500)
+    return c.json({ success: false, message: 'Server error', error: error.message }, 500)
   }
 })
 
