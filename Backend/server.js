@@ -11,12 +11,9 @@ const app = new Hono();
 
 app.use('*', cors({
   origin: (origin) => {
-    // Dynamically allow the origin if it's localhost or vercel/render
+    // Allow any origin during deployment (Vercel, Netlify, Render, Railway, custom domains)
     if (!origin) return '*';
-    if (origin.includes('localhost') || origin.includes('vercel.app') || origin.includes('onrender.com')) {
-      return origin;
-    }
-    return 'https://dev-destroyed.vercel.app'; // Default fallback
+    return origin;
   },
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],

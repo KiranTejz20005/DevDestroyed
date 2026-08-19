@@ -30,6 +30,15 @@ const pageVariants = {
 export default function PageTransition({ children }) {
   const pathname = usePathname();
   const shouldReduceMotion = useReducedMotion();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <>{children}</>;
+  }
 
   return (
     <AnimatePresence mode="wait">
